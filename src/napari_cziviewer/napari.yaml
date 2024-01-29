@@ -1,0 +1,10 @@
+name: napari-cziviewer
+display_name: CZI Viewer
+contributions:
+  commands:
+    - id: napari-cziviewer.make_cziviewer_widget
+      python_name: napari_cziviewer._widget:CziViewerWidget
+      title: Make CZI Widget
+  widgets:
+    - command: napari-cziviewer.make_cziviewer_widget
+      display_name: Visualizer

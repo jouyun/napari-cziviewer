@@ -1,0 +1,10 @@
+pyproject.toml
+setup.cfg
+src/napari_cziviewer/__init__.py
+src/napari_cziviewer/_widget.py
+src/napari_cziviewer.egg-info/PKG-INFO
+src/napari_cziviewer.egg-info/SOURCES.txt
+src/napari_cziviewer.egg-info/dependency_links.txt
+src/napari_cziviewer.egg-info/entry_points.txt
+src/napari_cziviewer.egg-info/requires.txt
+src/napari_cziviewer.egg-info/top_level.txt

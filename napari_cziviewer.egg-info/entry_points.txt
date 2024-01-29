@@ -1,0 +1,2 @@
+[napari.manifest]
+napari-cziviewer = napari_cziviewer:napari.yaml
