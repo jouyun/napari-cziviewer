@@ -3,3 +3,4 @@ Name: napari-cziviewer
 Version: 0.0.1
 Classifier: Framework :: napari
 Requires-Dist: napari
+Requires-Dist: czifile
