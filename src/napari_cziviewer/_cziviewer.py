@@ -7,7 +7,7 @@ import napari
 import skimage as ski
 import xml.etree.ElementTree as ET
 
-class Czi_Viewer:
+class CziViewer:
     def __init__(self, viewer):
         self.viewer = viewer
     
@@ -62,7 +62,7 @@ class Czi_Viewer:
         if len(self.overview_img.shape)==3:
             self.viewer.add_image(np.squeeze(self.overview_img), scale=self.overview_res, channel_axis=0, contrast_limits=contrast_limits, name=['C' + str(i) + '_Overview' for i in range(self.overview_img.shape[0])])
         if len(self.overview_img.shape)==4:
-            self.viewer.add_image(np.squeeze(self.overview_img).max(axis=0), scale=self.overview_res, channel_axis=0, contrast_limits=contrast_limits, name=['C' + str(i) +'_Overview' for i in range(self.overview_img.shape[0])])
+            self.viewer.add_image(np.squeeze(self.overview_img).max(axis=0), scale=self.overview_res, channel_axis=0, contrast_limits=contrast_limits, name=['C' + str(i) +'_Overview' for i in range(self.overview_img.shape[1])])
     
     def load_zoom(self, fname, idx=0, composite=False, name=None):
         zoom_full_img = czifile.imread(fname)
@@ -85,7 +85,7 @@ class Czi_Viewer:
         translation = translation - 50
 
         fname = fname.replace('\\', '/')
-        if name is None:
+        if (name is None) | (name == ''):
             name = fname.split('/')[-1]
         contrast_limits = [0, np.max(zoom_img)]
 

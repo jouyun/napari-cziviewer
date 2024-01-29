@@ -1,6 +1,8 @@
+README.md
 pyproject.toml
 setup.cfg
 src/napari_cziviewer/__init__.py
+src/napari_cziviewer/_cziviewer.py
 src/napari_cziviewer/_widget.py
 src/napari_cziviewer.egg-info/PKG-INFO
 src/napari_cziviewer.egg-info/SOURCES.txt
