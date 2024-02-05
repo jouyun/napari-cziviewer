@@ -43,6 +43,9 @@ class CziViewerWidget(QWidget):
 
         self.center_zoom_btn = QPushButton("Center Zoom on Selected Layer")
         self.center_zoom_btn.clicked.connect(self._center_zoom_click)
+
+        self.zoomed_layer_btn = QPushButton("Select Zoomed Layer")
+        self.zoomed_layer_btn.clicked.connect(self._select_zoomed_layer)
         
         # Create the radio button
         self.composite_radio_btn = QRadioButton("Load Zoom as Composite", )
@@ -54,14 +57,16 @@ class CziViewerWidget(QWidget):
         self.name_textbox.move(20, 20)
         self.name_textbox.resize(280,40)
         
+        # Create the order of the layout
         layout = QVBoxLayout()
         layout.addWidget(self.load_overview_btn)
-        layout.addSpacing(200)  # Adjust the number to add more or less space
+        layout.addSpacing(200)  # Separate loading the overview from all of the zoom image functionality
         layout.addWidget(self.label)
         layout.addWidget(self.name_textbox)
         layout.addWidget(self.composite_radio_btn)
         layout.addWidget(self.load_zoom_btn)
         layout.addWidget(self.center_zoom_btn)
+        layout.addWidget(self.zoomed_layer_btn)
 
         # Finish the layout
         self.setLayout(layout)
@@ -102,3 +107,6 @@ class CziViewerWidget(QWidget):
     def _center_zoom_click(self):
         current_layer = self.viewer.layers.selection.active.name
         self.cziviewer.focus_on(self.viewer.layers[current_layer]) 
+
+    def _select_zoomed_layer(self):
+        self.cziviewer.select_on()

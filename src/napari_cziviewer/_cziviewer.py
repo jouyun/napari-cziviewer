@@ -56,13 +56,23 @@ class CziViewer:
         self.overview_centroid = self.get_tile_center(fname)[idx]
         
         self.viewer.layers.clear()
-        contrast_limits = [0, 3000]
+        contrast_limits = [0, 65535]
         if len(self.overview_img.shape)==2:
             self.viewer.add_image(np.squeeze(self.overview_img), name='Overview', scale=self.overview_res, contrast_limits=contrast_limits)
         if len(self.overview_img.shape)==3:
             self.viewer.add_image(np.squeeze(self.overview_img), scale=self.overview_res, channel_axis=0, contrast_limits=contrast_limits, name=['C' + str(i) + '_Overview' for i in range(self.overview_img.shape[0])])
         if len(self.overview_img.shape)==4:
             self.viewer.add_image(np.squeeze(self.overview_img).max(axis=0), scale=self.overview_res, channel_axis=0, contrast_limits=contrast_limits, name=['C' + str(i) +'_Overview' for i in range(self.overview_img.shape[1])])
+
+        default_colors = ['magenta', 'gray', 'yellow', 'green', 'blue']
+        for i, layer in enumerate(self.viewer.layers):
+            if i<5:
+                layer.colormap = default_colors[i]
+            if i==1:
+                layer.visible = False
+
+        self.viewer.scale_bar.visible = True
+        self.viewer.scale_bar.unit = "um"
     
     def load_zoom(self, fname, idx=0, composite=False, name=None):
         zoom_full_img = czifile.imread(fname)
@@ -87,7 +97,8 @@ class CziViewer:
         fname = fname.replace('\\', '/')
         if (name is None) | (name == ''):
             name = fname.split('/')[-1]
-        contrast_limits = [0, np.max(zoom_img)]
+        #contrast_limits = [0, np.max(zoom_img)]
+        contrast_limits = [0, 65535]
 
         if len(zoom_img.shape)==2:
             self.viewer.add_image(zoom_img, scale=zoom_res, translate=translation, name=name, contrast_limits=contrast_limits)
@@ -109,3 +120,23 @@ class CziViewer:
         self.viewer.camera.center = (0,trans[-2]+img_center_offset_y, trans[-1]+img_center_offset_x)
         self.viewer.camera.zoom = 4
         
+    def select_on(self):
+        current = np.array(self.viewer.camera.center[-2:])
+
+        distances = []
+        overview_channels = 0
+        for layer in self.viewer.layers:
+            if layer.name.endswith('Overview'):
+                overview_channels += 1
+            else:
+                trans = np.array(layer.translate[-2:])
+                scale = np.array(layer.scale[-2:])
+                shape = np.array(layer.data.shape[-2:])
+                trans = trans + (shape/2 * scale)
+                distance = np.linalg.norm(trans-current)
+                distances.append(distance)
+
+        indices = np.array(np.where(distances==np.min(distances))[0]) + overview_channels
+        myset = set({self.viewer.layers[i] for i in indices})
+        self.viewer.layers.selection.active = self.viewer.layers[indices[0]]
+        self.viewer.layers.selection.update(myset)
