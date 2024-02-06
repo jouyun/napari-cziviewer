@@ -65,6 +65,7 @@ class CziViewerWidget(QWidget):
         layout.addWidget(self.name_textbox)
         layout.addWidget(self.composite_radio_btn)
         layout.addWidget(self.load_zoom_btn)
+        layout.addSpacing(100)  # Separate loading the images from navigation
         layout.addWidget(self.center_zoom_btn)
         layout.addWidget(self.zoomed_layer_btn)
 
