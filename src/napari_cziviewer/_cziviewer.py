@@ -64,12 +64,12 @@ class CziViewer:
         if len(self.overview_img.shape)==4:
             self.viewer.add_image(np.squeeze(self.overview_img).max(axis=0), scale=self.overview_res, channel_axis=0, contrast_limits=contrast_limits, name=['C' + str(i) +'_Overview' for i in range(self.overview_img.shape[1])])
 
-        # default_colors = ['magenta', 'gray', 'yellow', 'green', 'blue']
-        # for i, layer in enumerate(self.viewer.layers):
-        #     if i<5:
-        #         layer.colormap = default_colors[i]
-        #     if i==1:
-        #         layer.visible = False
+        default_colors = ['gray', 'green', 'cyan']
+        for i, layer in enumerate(self.viewer.layers):
+            if i<3:
+                layer.colormap = default_colors[i]
+            if i==0:
+                layer.visible = False
 
         self.viewer.scale_bar.visible = True
         self.viewer.scale_bar.unit = "um"
@@ -110,7 +110,7 @@ class CziViewer:
 
                 self.viewer.add_image(zoom_img, scale=zoom_res, channel_axis=0, translate=translation, contrast_limits=contrast_limits, name=['C' + str(i) +'_' + name for i in range(zoom_img.shape[0])])
 
-                default_colors = ['magenta', 'gray', 'yellow', 'green', 'blue']
+                default_colors = ['magenta', 'gray', 'yellow', 'green', 'cyan']
                 for i, layer in enumerate(self.viewer.layers):
                     cidx = i-num_layers
                     if (cidx<5) & (cidx>=0):
