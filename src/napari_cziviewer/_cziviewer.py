@@ -92,7 +92,7 @@ class CziViewer:
         translation = translation + np.array([self.ymin*self.overview_res[0], self.xmin*self.overview_res[0]])
 
         # AD HOC CORRECTION for 5X vs 63X
-        translation = translation - 50
+        translation = translation - 47
 
         fname = fname.replace('\\', '/')
         if (name is None) | (name == ''):
