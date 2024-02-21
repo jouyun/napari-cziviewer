@@ -74,7 +74,7 @@ class CziViewer:
         self.viewer.scale_bar.visible = True
         self.viewer.scale_bar.unit = "um"
     
-    def load_zoom(self, fname, idx=0, composite=False, name=None):
+    def load_zoom(self, fname, idx=0, contrast_values=None, composite=False, name=None):
         zoom_full_img = czifile.imread(fname)
         zoom_img = np.squeeze(zoom_full_img)
         zoom_res = self.get_resolution(fname)
@@ -115,13 +115,68 @@ class CziViewer:
                     cidx = i-num_layers
                     if (cidx<5) & (cidx>=0):
                         layer.colormap = default_colors[cidx]
+                        if contrast_values is not None:
+                            print(contrast_values[cidx])
+                            layer.contrast_limits = contrast_values[cidx]
                     if cidx==1:
                         layer.visible = False
             else:
                 self.viewer.add_image(zoom_img, scale=zoom_res, translate=translation, name=name, contrast_limits=contrast_limits)
     
         self.focus_on(self.viewer.layers[-1])
+
+    def load_zoom_stitched(self, fname, idx=0, contrast_values=None, composite=False, name=None):
+        zoom_full_img = ski.io.imread(fname)
+        zoom_img = np.squeeze(zoom_full_img)
+        df = pd.read_csv(fname.replace('.tif', '.csv'))
+        zoom_res = df[['pixel_size_X', 'pixel_size_Y']].values[0]
+        zoom_res = zoom_res * 1E6
+        print(fname)
+        zoom_centroid = df[['center_x', 'center_y']].values[0]
+        zoom_shape = np.array(zoom_img.shape)[-2:]
         
+        self.overview_centroid = self.get_tile_center(self.overview)[idx]
+
+        overview_ctr_microns = self.c0_shape / 2 * self.overview_res
+        zoom_ctr_microns = zoom_shape / 2 * zoom_res
+        translation = overview_ctr_microns - zoom_ctr_microns
+        translation = translation - 1*(self.overview_centroid - zoom_centroid)[::-1]
+        
+        translation = translation + np.array([self.ymin*self.overview_res[0], self.xmin*self.overview_res[0]])
+
+        # AD HOC CORRECTION for 5X vs 63X
+        translation = translation - 47
+
+        fname = fname.replace('\\', '/')
+        if (name is None) | (name == ''):
+            name = fname.split('/')[-1]
+        #contrast_limits = [0, np.max(zoom_img)]
+        contrast_limits = [0, 65535]
+
+        if len(zoom_img.shape)==2:
+            self.viewer.add_image(zoom_img, scale=zoom_res, translate=translation, name=name, contrast_limits=contrast_limits)
+        if len(zoom_img.shape)==3:
+            self.viewer.add_image(zoom_img, scale=zoom_res, translate=translation, name=name, contrast_limits=contrast_limits)
+        if len(zoom_img.shape)==4:
+            if composite:
+                num_layers = len(self.viewer.layers)
+
+                self.viewer.add_image(zoom_img, scale=zoom_res, channel_axis=1, translate=translation, contrast_limits=contrast_limits, name=['C' + str(i) +'_' + name for i in range(zoom_img.shape[0])])
+
+                default_colors = ['magenta', 'gray', 'yellow', 'green', 'cyan']
+                for i, layer in enumerate(self.viewer.layers):
+                    cidx = i-num_layers
+                    if (cidx<5) & (cidx>=0):
+                        layer.colormap = default_colors[cidx]
+                        if contrast_values is not None:
+                            layer.contrast_limits = contrast_values[cidx]
+                    if cidx==1:
+                        layer.visible = False
+            else:
+                self.viewer.add_image(zoom_img, scale=zoom_res, translate=translation, name=name, contrast_limits=contrast_limits)
+    
+        self.focus_on(self.viewer.layers[-1])
+
     def focus_on(self, layer):
         img_center_offset_x = layer.scale[-1] * layer.data.shape[-1]/2
         img_center_offset_y = layer.scale[-2] * layer.data.shape[-2]/2
@@ -150,3 +205,20 @@ class CziViewer:
         myset = set({self.viewer.layers[i] for i in indices})
         self.viewer.layers.selection.active = self.viewer.layers[indices[0]]
         #self.viewer.layers.selection.update(myset)
+
+    def z_project(self):
+        current_layer = self.viewer.layers.selection.active.name
+
+        associated_layers = []
+        if (current_layer[0] == 'C') & (current_layer[2] == '_'):
+            subname = current_layer.split('_')[1]
+            for layer in self.viewer.layers:
+                if subname in layer.name:
+                    associated_layers.append(layer)
+            for layer in associated_layers:
+                if len(layer.data.shape)>2:
+                    layer.data = layer.data.max(axis=0)
+        else:
+            shape = self.viewer.layers[current_layer].data.shape[0:-2]
+            channel_axis = np.argmax(shape)
+            self.viewer.layers[current_layer].data = self.viewer.layers[current_layer].data.max(axis=channel_axis)

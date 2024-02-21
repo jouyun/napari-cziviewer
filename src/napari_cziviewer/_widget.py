@@ -46,6 +46,9 @@ class CziViewerWidget(QWidget):
 
         self.zoomed_layer_btn = QPushButton("Select Zoomed Layer")
         self.zoomed_layer_btn.clicked.connect(self._select_zoomed_layer)
+
+        self.z_projection_btn = QPushButton("Do Z Projection")
+        self.z_projection_btn.clicked.connect(self._z_projection_click)
         
         # Create the radio button
         self.composite_radio_btn = QRadioButton("Load Zoom as Composite", )
@@ -57,6 +60,54 @@ class CziViewerWidget(QWidget):
         self.name_textbox.move(20, 20)
         self.name_textbox.resize(280,40)
         
+        # Create textboxes for channel contrasts
+        self.c0_label = QLabel("Channel 0 Contrast Limits")
+        self.c0_min_textbox = QLineEdit(self)
+        self.c0_min_textbox.setText("0")  # Set default value
+        self.c0_min_textbox.move(20, 20)
+        self.c0_min_textbox.resize(120,40)
+        self.c0_max_textbox = QLineEdit(self)
+        self.c0_max_textbox.setText("10000")
+        self.c0_max_textbox.move(320, 20)  # Adjusted the x-coordinate for visibility
+        self.c0_max_textbox.resize(120,40)
+        self.c1_label = QLabel("Channel 1 Contrast Limits")
+        self.c1_min_textbox = QLineEdit(self)
+        self.c1_min_textbox.setText("0")  # Set default value
+        self.c1_min_textbox.move(20, 20)
+        self.c1_min_textbox.resize(280,40)
+        self.c1_max_textbox = QLineEdit(self)
+        self.c1_max_textbox.setText("10000")
+        self.c1_max_textbox.move(20, 20)
+        self.c1_max_textbox.resize(280,40)
+        self.c2_label = QLabel("Channel 2 Contrast Limits")
+        self.c2_min_textbox = QLineEdit(self)
+        self.c2_min_textbox.setText("0")
+        self.c2_min_textbox.move(20, 20)
+        self.c2_min_textbox.resize(280,40)
+        self.c2_max_textbox = QLineEdit(self)
+        self.c2_max_textbox.setText("10000")
+        self.c2_max_textbox.move(20, 20)
+        self.c2_max_textbox.resize(280,40)
+        self.c3_label = QLabel("Channel 3 Contrast Limits")
+        self.c3_min_textbox = QLineEdit(self)
+        self.c3_min_textbox.setText("0")
+        self.c3_min_textbox.move(20, 20)
+        self.c3_min_textbox.resize(280,40)
+        self.c3_max_textbox = QLineEdit(self)
+        self.c3_max_textbox.setText("10000")
+        self.c3_max_textbox.move(20, 20)
+        self.c3_max_textbox.resize(280,40)
+        self.c4_label = QLabel("Channel 4 Contrast Limits")
+        self.c4_min_textbox = QLineEdit(self)
+        self.c4_min_textbox.setText("0")
+        self.c4_min_textbox.move(20, 20)
+        self.c4_min_textbox.resize(280,40)
+        self.c4_max_textbox = QLineEdit(self)
+        self.c4_max_textbox.setText("10000")
+        self.c4_max_textbox.move(20, 20)
+        self.c4_max_textbox.resize(280,40)
+
+
         # Create the order of the layout
         layout = QVBoxLayout()
         layout.addWidget(self.load_overview_btn)
@@ -65,6 +116,22 @@ class CziViewerWidget(QWidget):
         layout.addWidget(self.name_textbox)
         layout.addWidget(self.composite_radio_btn)
         layout.addWidget(self.load_zoom_btn)
+        layout.addWidget(self.c0_label)
+        layout.addWidget(self.c0_min_textbox)
+        layout.addWidget(self.c0_max_textbox)
+        layout.addWidget(self.c1_label)
+        layout.addWidget(self.c1_min_textbox)
+        layout.addWidget(self.c1_max_textbox)
+        layout.addWidget(self.c2_label)
+        layout.addWidget(self.c2_min_textbox)
+        layout.addWidget(self.c2_max_textbox)
+        layout.addWidget(self.c3_label)
+        layout.addWidget(self.c3_min_textbox)
+        layout.addWidget(self.c3_max_textbox)
+        layout.addWidget(self.c4_label)
+        layout.addWidget(self.c4_min_textbox)
+        layout.addWidget(self.c4_max_textbox)
+        layout.addWidget(self.z_projection_btn)
         layout.addSpacing(100)  # Separate loading the images from navigation
         layout.addWidget(self.center_zoom_btn)
         layout.addWidget(self.zoomed_layer_btn)
@@ -92,16 +159,32 @@ class CziViewerWidget(QWidget):
         # Get the selected files
         file_names, _ = file_dialog.getOpenFileNames(self, "Open files", "", "All Files (*)")
 
+        # Get the contrast values
+        contrast_values = []
+        contrast_values.append([float(self.c0_min_textbox.text()), float(self.c0_max_textbox.text())])
+        contrast_values.append([float(self.c1_min_textbox.text()), float(self.c1_max_textbox.text())])
+        contrast_values.append([float(self.c2_min_textbox.text()), float(self.c2_max_textbox.text())])
+        contrast_values.append([float(self.c3_min_textbox.text()), float(self.c3_max_textbox.text())])
+        contrast_values.append([float(self.c4_min_textbox.text()), float(self.c4_max_textbox.text())])
+
+        print(contrast_values)
+        
         print(len(file_names))
         if file_names:
             if (len(file_names) == 1):
                 print(f"Selected file: {file_names[0]}")
-                self.cziviewer.load_zoom(file_names[0], name=self.name_textbox.text(), composite=self.composite_radio_btn.isChecked())
+                if (file_names[0].endswith('.czi')):
+                    self.cziviewer.load_zoom(file_names[0], name=self.name_textbox.text(), composite=self.composite_radio_btn.isChecked(), contrast_values=contrast_values)
+                if (file_names[0].endswith('.tif')):
+                    self.cziviewer.load_zoom_stitched(file_names[0], name=self.name_textbox.text(), composite=self.composite_radio_btn.isChecked(), contrast_values=contrast_values)
             else:
                 for file_name in file_names:
                     print(f"Selected file: {file_name}")
-                    #self.cziviewer.load_zoom(file_name, composite=self.composite_radio_btn.isChecked())
-                    self.cziviewer.load_zoom(file_name, composite=False)
+                    if (file_name.endswith('.czi')):
+                        self.cziviewer.load_zoom(file_name, composite=self.composite_radio_btn.isChecked(), contrast_values=contrast_values)
+                    if (file_name.endswith('.tif')):
+                        self.cziviewer.load_zoom_stitched(file_name, composite=self.composite_radio_btn.isChecked(), contrast_values=contrast_values)
+
         else:
             print("No files selected")       
 
@@ -111,3 +194,6 @@ class CziViewerWidget(QWidget):
 
     def _select_zoomed_layer(self):
         self.cziviewer.select_on()
+    
+    def _z_projection_click(self):
+        self.cziviewer.z_project()
